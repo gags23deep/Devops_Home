@@ -1,0 +1,92 @@
+# V-database
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mariadb-pass-v
+  
+  labels:
+    app: wordpress-v
+data:
+  # This value is base64-encoded. Do not use this password in production!
+  password: cnl2QE04M2xWWGdsNmZR
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-pv-claim-v
+  
+  labels:
+    app: wordpress-v
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress-mariadb-v
+    # namespace: web  
+  labels:
+    app: wordpress-v
+spec:
+  selector:
+    matchLabels:
+      app: wordpress-v
+      tier: mariadb-v
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: wordpress-v
+        tier: mariadb-v
+    spec:
+      containers:
+        - image: tobi312/rpi-mariadb:10.3
+          name: mariadb-v
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-pass-v
+                  key: password
+          ports:
+            - containerPort: 3306
+              name: mariadb-v
+          volumeMounts:
+            - name: mariadb-persistent-storage-v
+              mountPath: /var/lib/mysql
+          resources:
+            limits:
+              cpu: '1'
+              memory: '512Mi'
+            requests:
+              cpu: '500m'
+              memory: '256Mi'
+      volumes:
+        - name: mariadb-persistent-storage-v
+          persistentVolumeClaim:
+            claimName: mariadb-pv-claim-v
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-mariadb-v
+    # namespace: web  
+  
+  labels:
+    app: wordpress-v
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: wordpress-v
+    tier: mariadb-v
+  clusterIP: None
