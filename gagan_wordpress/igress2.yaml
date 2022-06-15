@@ -1,0 +1,15 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+    - host: singhgagandeep.com
+      http:
+        paths:
+          - path: /*
+              backend:
+                serviceName: wordpress-service
+                servicePort: 80
