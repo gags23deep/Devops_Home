@@ -7,7 +7,7 @@ metadata:
     app: wordpress
 data:
   # This value is base64-encoded. Do not use this password in production!
-  password: UHJlZGF0b3IxMDBA 
+  password:
 
 ---
 apiVersion: v1
